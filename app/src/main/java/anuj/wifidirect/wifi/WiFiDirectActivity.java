@@ -78,9 +78,6 @@ public class WiFiDirectActivity extends AppCompatActivity implements ChannelList
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main);
         initViews();
-        AdView mAdView = (AdView) findViewById(R.id.adView);
-        AdRequest adRequest = new AdRequest.Builder().build();
-        mAdView.loadAd(adRequest);
 
         checkStoragePermission();
     }
@@ -181,7 +178,6 @@ public class WiFiDirectActivity extends AppCompatActivity implements ChannelList
                         .findFragmentById(R.id.frag_list);
                 fragment.onInitiateDiscovery();
                 manager.discoverPeers(channel, new ActionListener() {
-
                     @Override
                     public void onSuccess() {
                         Toast.makeText(WiFiDirectActivity.this, "Discovery Initiated",

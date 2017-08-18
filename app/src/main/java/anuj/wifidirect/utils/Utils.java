@@ -40,10 +40,6 @@ import java.text.SimpleDateFormat;
 import java.util.Locale;
 import java.util.TimeZone;
 
-/**
- * Created by anuj.sharma on 1/12/2017.
- */
-
 public class Utils {
     private static Utils ourInstance = new Utils();
     /*

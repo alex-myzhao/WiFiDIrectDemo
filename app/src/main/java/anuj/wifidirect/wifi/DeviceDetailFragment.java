@@ -73,9 +73,6 @@ import static anuj.wifidirect.utils.PermissionsAndroid.WRITE_EXTERNAL_STORAGE_PE
  * i.e. setting up network connection and transferring data.
  */
 public class DeviceDetailFragment extends android.support.v4.app.Fragment implements ConnectionInfoListener, FilePickerCallback {
-
-    static InterstitialAd mInterstitialAd;
-
     protected static final int CHOOSE_FILE_RESULT_CODE = 20;
     private View mContentView = null;
     private WifiP2pDevice device;
@@ -112,26 +109,14 @@ public class DeviceDetailFragment extends android.support.v4.app.Fragment implem
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-
         mContentView = inflater.inflate(R.layout.device_detail, null);
-
-        mInterstitialAd = new InterstitialAd(getActivity());
-        mInterstitialAd.setAdUnitId(getString(R.string.fullscreen_ad_unit_id));
-        mInterstitialAd.setAdListener(new AdListener() {
-            @Override
-            public void onAdClosed() {
-                requestNewInterstitial();
-            }
-        });
-
-        requestNewInterstitial();
 
         mContentView.findViewById(R.id.btn_connect).setOnClickListener(new View.OnClickListener() {
 
             @Override
             public void onClick(View v) {
                 WifiP2pConfig config = new WifiP2pConfig();
-                if (config != null && config.deviceAddress != null && device != null) {
+                if (config.deviceAddress != null && device != null) {
                     config.deviceAddress = device.deviceAddress;
                     config.wps.setup = WpsInfo.PBC;
                     if (progressDialog != null && progressDialog.isShowing()) {
@@ -141,8 +126,6 @@ public class DeviceDetailFragment extends android.support.v4.app.Fragment implem
                             "Connecting to :" + device.deviceAddress, true, true
                     );
                     ((DeviceActionListener) getActivity()).connect(config);
-                } else {
-
                 }
             }
         });
@@ -167,13 +150,6 @@ public class DeviceDetailFragment extends android.support.v4.app.Fragment implem
                 });
 
         return mContentView;
-    }
-
-    private void requestNewInterstitial() {
-        AdRequest adRequest = new AdRequest.Builder()
-                .build();
-
-        mInterstitialAd.loadAd(adRequest);
     }
 
     private void checkExternalStoragePermission() {
@@ -262,21 +238,20 @@ public class DeviceDetailFragment extends android.support.v4.app.Fragment implem
 
             if (info.groupFormed && info.isGroupOwner) {
             /*
-             * set shaerdprefrence which remember that device is server.
+             * set sharedPreference which remember that device is server.
         	 */
                 SharedPreferencesHandler.setStringValues(getActivity(),
                         getString(R.string.pref_ServerBoolean), "true");
 
                 FileServerAsyncTask FileServerobj = new FileServerAsyncTask(
                         getActivity(), FileTransferService.PORT);
-                if (FileServerobj != null) {
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
-                        FileServerobj.executeOnExecutor(
-                                AsyncTask.THREAD_POOL_EXECUTOR,
-                                new String[]{null});
-                        // FileServerobj.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR,Void);
-                    } else
-                        FileServerobj.execute();
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
+                    FileServerobj.executeOnExecutor(
+                            AsyncTask.THREAD_POOL_EXECUTOR,
+                            new String[]{null});
+                    // FileServerobj.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR,Void);
+                } else {
+                    FileServerobj.execute();
                 }
             } else {
                 // The other device acts as the client. In this case, we enable the
@@ -294,21 +269,19 @@ public class DeviceDetailFragment extends android.support.v4.app.Fragment implem
                     }
                 }
 
-                FileServerAsyncTask FileServerobj = new FileServerAsyncTask(
+                FileServerAsyncTask FileServerObj = new FileServerAsyncTask(
                         getActivity(), FileTransferService.PORT);
-                if (FileServerobj != null) {
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
-                        FileServerobj.executeOnExecutor(
-                                AsyncTask.THREAD_POOL_EXECUTOR,
-                                new String[]{null});
-                    } else
-                        FileServerobj.execute();
-
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
+                    FileServerObj.executeOnExecutor(
+                            AsyncTask.THREAD_POOL_EXECUTOR,
+                            new String[]{null});
+                } else {
+                    FileServerObj.execute();
                 }
 
             }
         } catch (Exception e) {
-
+            e.printStackTrace();
         }
     }
 
@@ -370,8 +343,7 @@ public class DeviceDetailFragment extends android.support.v4.app.Fragment implem
             extension = list.get(0).getDisplayName().substring(i + 1);
         }
 
-        ActualFilelength = file.getSize();
-        ;
+        ActualFilelength = file.getSize();;
 
         TextView statusText = (TextView) mContentView.findViewById(R.id.status_text);
         statusText.setText("Sending: " + file.getOriginalPath());
@@ -415,7 +387,7 @@ public class DeviceDetailFragment extends android.support.v4.app.Fragment implem
                     String.valueOf(ActualFilelength));
 
             if (host != null && sub_port != -1) {
-                showprogress("Sending...");
+                showProgress("Sending...");
                 getActivity().startService(serviceIntent);
             } else {
                 CommonMethods.DisplayToast(getActivity(),
@@ -509,7 +481,6 @@ public class DeviceDetailFragment extends android.support.v4.app.Fragment implem
                         final Runnable r = new Runnable() {
 
                             public void run() {
-                                // TODO Auto-generated method stub
                                 mProgressDialog.setMessage("Receiving...");
                                 mProgressDialog.setIndeterminate(false);
                                 mProgressDialog.setMax(100);
@@ -543,7 +514,7 @@ public class DeviceDetailFragment extends android.support.v4.app.Fragment implem
                     InputStream inputstream = client.getInputStream();
 
 
-                    copyRecievedFile(inputstream, new FileOutputStream(f),
+                    copyReceivedFile(inputstream, new FileOutputStream(f),
                             ReceivedFileLength);
                     ois.close(); // close the ObjectOutputStream object after saving
                     // file to storage.
@@ -578,9 +549,6 @@ public class DeviceDetailFragment extends android.support.v4.app.Fragment implem
         protected void onPostExecute(String result) {
             if (result != null) {
                 if (!result.equalsIgnoreCase("Demo")) {
-                    if (mInterstitialAd.isLoaded()) {
-                        mInterstitialAd.show();
-                    }
                     openFile(result, mFilecontext);
                 } else if (!TextUtils.isEmpty(result)) {
                     /*
@@ -666,11 +634,9 @@ public class DeviceDetailFragment extends android.support.v4.app.Fragment implem
             //so you can choose which application to use
             intent.setDataAndType(uri, "*/*");
         }
-//        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         context.startActivity(intent);
 
     }
-
 
     public static boolean copyFile(InputStream inputStream, OutputStream out) {
         long total = 0;
@@ -710,7 +676,7 @@ public class DeviceDetailFragment extends android.support.v4.app.Fragment implem
         return true;
     }
 
-    public static boolean copyRecievedFile(InputStream inputStream,
+    public static boolean copyReceivedFile(InputStream inputStream,
                                            OutputStream out, Long length) {
 
         byte buf[] = new byte[FileTransferService.ByteSize];
@@ -758,7 +724,7 @@ public class DeviceDetailFragment extends android.support.v4.app.Fragment implem
         return true;
     }
 
-    public void showprogress(final String task) {
+    public void showProgress(final String task) {
         if (mProgressDialog == null) {
             mProgressDialog = new ProgressDialog(getActivity(),
                     ProgressDialog.THEME_HOLO_LIGHT);
@@ -801,7 +767,7 @@ public class DeviceDetailFragment extends android.support.v4.app.Fragment implem
      * Async class that has to be called when connection establish first time. Its main motive is to send blank message
      * to server so that server knows the IP address of client to send files Bi-Directional.
      */
-    class firstConnectionMessage extends AsyncTask<String, Void, String> {
+     private class firstConnectionMessage extends AsyncTask<String, Void, String> {
 
         String GroupOwnerAddress = "";
 
@@ -835,23 +801,19 @@ public class DeviceDetailFragment extends android.support.v4.app.Fragment implem
             }
 
             getActivity().startService(serviceIntent);
-
             return "success";
         }
 
         @Override
         protected void onPostExecute(String result) {
-            // TODO Auto-generated method stub
             super.onPostExecute(result);
             if (result != null) {
                 if (result.equalsIgnoreCase("success")) {
                     CommonMethods.e("On first Connect",
-                            "On first Connect sent to asynctask");
+                            "On first Connect sent to asyncTask");
                     ClientCheck = true;
                 }
             }
-
         }
-
     }
 }

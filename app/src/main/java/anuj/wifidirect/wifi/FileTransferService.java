@@ -50,7 +50,6 @@ public class FileTransferService extends IntentService {
 
     @Override
     public void onCreate() {
-    	// TODO Auto-generated method stub
     	super.onCreate();
     	mHandler = new Handler();
     }
@@ -60,7 +59,6 @@ public class FileTransferService extends IntentService {
      */
     @Override
     protected void onHandleIntent(Intent intent) {
-
         Context context = getApplicationContext();
         if (intent.getAction().equals(ACTION_SEND_FILE)) {
             String fileUri = intent.getExtras().getString(EXTRAS_FILE_PATH);
